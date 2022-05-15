@@ -1,0 +1,55 @@
+html, input, button{
+  font-family: 'Inter', sans-serif;
+}
+
+body{
+  overflow: hidden;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center; 
+  align-items: center; 
+}
+
+.form-container{
+  width: 240px;
+}
+
+
+
+.form-div{
+  margin-bottom: 10px;
+}
+
+input{
+  display: block;
+  width: 230px;
+  padding: 3px 5px;
+  border: none;
+  border-bottom: 1px solid black;
+  margin-top: 1px;
+}
+
+button{
+  margin-top: 10px;
+  width: 100%;
+  padding: 8px 5px;
+  background-color: rebeccapurple;
+  border: none;
+  color: white;
+  text-transform: uppercase;
+}
+
+
+h1{
+  font-size: 14px;
+}
+h2, label, p, input, button{
+  font-size: 12px;
+}
+
+
+input:focus{
+  outline: none;
+}
