@@ -16298,6 +16298,11 @@
   "RootNamespace": "NewsletterApp",
   "Documents": [
     {
+      "FilePath": "c:\\Users\\hp\\Desktop\\NewsletterApp\\Pages\\Confirm.cshtml",
+      "TargetPath": "Pages\\Confirm.cshtml",
+      "FileKind": "mvc"
+    },
+    {
       "FilePath": "c:\\Users\\hp\\Desktop\\NewsletterApp\\Pages\\Index.cshtml",
       "TargetPath": "Pages\\Index.cshtml",
       "FileKind": "mvc"
