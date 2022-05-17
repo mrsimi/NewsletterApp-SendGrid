@@ -41,29 +41,27 @@ namespace NewsletterApp.Pages
                 if (response.IsSuccessStatusCode)
                 {
                     var responseJson = await response.Body.ReadFromJsonAsync<SubscribersResponse>();
-                    string userID = responseJson.result.FirstOrDefault().id;
-                    // var deleteData = new DeleteEmailRequest
-                    // {
-                    //     ids = userID
-                    // };
+                    if(responseJson.contact_count == 0)
+                    {
+                        ViewData["ResponseMessage"] = "You are already unsubscribed from this newsletter";
+                    }
+                    else
+                    {
+                        string userID = responseJson.result.FirstOrDefault().id;
+                        var deleteResponse = await client.RequestAsync(
+                            method: SendGridClient.Method.DELETE,
+                            urlPath: $"marketing/contacts?ids={userID}"
+                        );
 
-                    // string jsonString = JsonSerializer.Serialize(deleteData);
-
-                    var queryParams = @"{
-                        'ids': 'value'
-                    }";
-
-                    queryParams = queryParams.Replace("value", userID);
-
-                    var deleteResponse = await client.RequestAsync(
-                        method: SendGridClient.Method.DELETE,
-                        urlPath: "marketing/contacts",
-                        requestBody: queryParams
-                    );
-
-
-
-                    ViewData["ResponseMessage"] = "We are sorry to see you go.";
+                        if(deleteResponse.IsSuccessStatusCode)
+                        {
+                            ViewData["ResponseMessage"] = "We are sorry to see you go.";
+                        }
+                        else 
+                        {
+                            ViewData["ResponseMessage"]  = "There was an error while trying to unsubscribe you. Kindly try again later"
+                        }
+                    }
                 }
                 else
                 {
