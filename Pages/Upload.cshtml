@@ -1,0 +1,31 @@
+@page
+@model UploadModel
+@{
+    ViewData["Title"] = "Uplaod Newsletter";
+}
+
+<div class="form-container">
+    <h1>Send Newsletter</h1>
+    <p>Upload the Newsletter file</p>
+    <p class="critical">
+        @TempData["Error"]
+    </p>
+
+    <p class="success">
+        @TempData["SuccessMessage"]
+    </p>
+    <div>
+        <form method="post" enctype="multipart/form-data">
+            <div>
+                <label>Email Subject</label>
+                <input type="text" asp-for="NewsletterInfo.EmailSubject" required/>
+            </div>
+            <div>
+                <label>Newsletter</label>
+                <input type="file" asp-for="NewsletterInfo.Newsletter" required/>
+            </div>
+
+            <button type="submit">Upload </button>
+        </form>
+    </div>
+</div>

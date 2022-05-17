@@ -16308,6 +16308,11 @@
       "FileKind": "mvc"
     },
     {
+      "FilePath": "c:\\Users\\hp\\Desktop\\NewsletterApp\\Pages\\Upload.cshtml",
+      "TargetPath": "Pages\\Upload.cshtml",
+      "FileKind": "mvc"
+    },
+    {
       "FilePath": "c:\\Users\\hp\\Desktop\\NewsletterApp\\Pages\\Privacy.cshtml",
       "TargetPath": "Pages\\Privacy.cshtml",
       "FileKind": "mvc"
@@ -16340,6 +16345,11 @@
     {
       "FilePath": "c:\\Users\\hp\\Desktop\\NewsletterApp\\Pages\\_ViewStart.cshtml",
       "TargetPath": "Pages\\_ViewStart.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "c:\\Users\\hp\\Desktop\\NewsletterApp\\Pages\\Unsubscribe.cshtml",
+      "TargetPath": "Pages\\Unsubscribe.cshtml",
       "FileKind": "mvc"
     },
     {

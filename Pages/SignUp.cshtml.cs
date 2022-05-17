@@ -30,7 +30,7 @@ namespace NewsletterApp.Pages
             var client = new SendGridClient(sendGridApiKey);
             var msg = new SendGridMessage
             {
-                From = new EmailAddress("home@turntablecharts.com", "Testing-Email"),
+                From = new EmailAddress("home@turntablecharts.com", "Tan Business"),
                 Subject = "Confirm Newsletter Signup",
                 PlainTextContent = "Welcome", 
                 HtmlContent = $"<h3>Hello {ContactInfo.FullName}</h3><p>Welcome to our Newsletter. <br> <br> "+
