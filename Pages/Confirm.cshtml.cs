@@ -1,58 +1,54 @@
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using NewsletterApp.DTO;
-using NewsletterApp.Helpers;
 using SendGrid;
 
-namespace NewsletterApp.Pages
+namespace NewsletterApp.Pages;
+
+public class ConfirmModel : PageModel
 {
-    public class ConfirmModel : PageModel
+    private readonly ISendGridClient _sendGridClient;
+
+    public string ResponseMessage { get; set; }
+
+    public ConfirmModel(ISendGridClient sendGridClient)
     {
-        private readonly IConfiguration _config;
-        public ConfirmModel(IConfiguration configuration)
+        _sendGridClient = sendGridClient;
+    }
+
+    public async Task OnGetAsync(
+        [FromQuery(Name = "email")] string emailAddress,
+        [FromQuery(Name = "confirmation")] Guid confirmationId
+    )
+    {
+        // TODO: retrieve existing contact from contact database
+        // TODO: verify confirmation ID matches from the ID stored in SendGrid contact
+        // TODO: don't create a contact, add existing contact to marketing list
+
+        // Suggestion: use anonymous objects for requests, keeps things simpler for the tutorial
+        var subscribeRequest = new
         {
-            _config = configuration;
+            contacts = new[]
+            {
+                new {email = emailAddress}
+            }
+        };
+
+        string requestBody = JsonSerializer.Serialize(subscribeRequest);
+
+        var response = await _sendGridClient.RequestAsync(
+            method: SendGridClient.Method.PUT,
+            urlPath: "marketing/contacts",
+            requestBody: requestBody
+        );
+
+        if (response.IsSuccessStatusCode)
+        {
+            ResponseMessage = "Thank you for Signing up for our newsletter.";
         }
-        public async Task OnGetAsync(string query)
+        else
         {
-            string decodedEmail = SecurityHelper.Base64Decode(query);
-            if (new EmailAddressAttribute().IsValid(decodedEmail.ToString()))
-            {
-                string sendGridApiKey = _config["SendGridAPIKey"];
-
-                var subscribeRequest = new SubscribeEmailRequest
-                {
-                    contacts = new List<dynamic> {
-                        new {email = decodedEmail}
-                    }
-                };
-
-                string data = JsonSerializer.Serialize(subscribeRequest);
-
-                var client = new SendGridClient(sendGridApiKey);
-
-
-                var response = await client.RequestAsync(
-                    method: SendGridClient.Method.PUT,
-                    urlPath: "marketing/contacts",
-                    requestBody: data
-                );
-
-                if (response.IsSuccessStatusCode)
-                {
-                    ViewData["ResponseMessage"] = "Thank you for Signing up for our newsletter.";
-                }
-                else
-                {
-                    ViewData["ResponseMessage"] = "Sorry, but this is an invalid link";
-                }
-
-            }
-            else
-            {
-                ViewData["ResponseMessage"] = "Sorry, but this is an invalid link";
-            }
+            ResponseMessage = "Sorry, but this is an invalid link";
         }
     }
 }

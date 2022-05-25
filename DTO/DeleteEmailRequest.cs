@@ -1,7 +1,6 @@
-namespace NewsletterApp.DTO
+namespace NewsletterApp.DTO;
+
+public class DeleteEmailRequest
 {
-    public class DeleteEmailRequest
-    {
-        public string ids { get; set; }
-    }
+    public string ids { get; set; }
 }

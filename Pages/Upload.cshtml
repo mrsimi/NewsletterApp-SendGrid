@@ -1,31 +1,38 @@
 @page
 @model UploadModel
 @{
-    ViewData["Title"] = "Uplaod Newsletter";
+    ViewData["Title"] = "Upload Newsletter Issue";
 }
 
 <div class="form-container">
     <h1>Send Newsletter</h1>
     <p>Upload the Newsletter file</p>
-    <p class="critical">
-        @TempData["Error"]
-    </p>
+    @if (Model.ErrorMessage != null)
+    {
+        <p class="critical">
+            @Model.ErrorMessage
+        </p>
+    }
 
-    <p class="success">
-        @TempData["SuccessMessage"]
-    </p>
+    @if (Model.SuccessMessage != null)
+    {
+        <p class="success">
+            @Model.SuccessMessage
+        </p>
+    }
     <div>
         <form method="post" enctype="multipart/form-data">
             <div>
                 <label>Email Subject</label>
-                <input type="text" asp-for="NewsletterInfo.EmailSubject" required/>
+                <input type="text" asp-for="NewsletterViewModel.EmailSubject" required />
             </div>
+            @* Suggestion: add sendAt field to capture date time to schedule the newsletter issue at *@
             <div>
                 <label>Newsletter</label>
-                <input type="file" asp-for="NewsletterInfo.Newsletter" required/>
+                <input type="file" asp-for="NewsletterViewModel.Newsletter" required />
             </div>
 
-            <button type="submit">Upload </button>
+            <button type="submit">Upload</button>
         </form>
     </div>
 </div>

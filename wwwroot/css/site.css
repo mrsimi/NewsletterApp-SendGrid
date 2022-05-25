@@ -16,8 +16,6 @@ body{
   width: 240px;
 }
 
-
-
 .form-div{
   margin-bottom: 10px;
 }
@@ -39,17 +37,12 @@ button{
   text-transform: uppercase;
 }
 
-
 h1{
-  font-size: 14px;
+  font-size: 18px;
 }
+
 h2, label, p, input, button{
-  font-size: 12px;
-}
-
-
-input:focus{
-  outline: none;
+  font-size: 14px;
 }
 
 .critical {

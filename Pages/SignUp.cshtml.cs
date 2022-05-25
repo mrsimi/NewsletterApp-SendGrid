@@ -1,53 +1,63 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using NewsletterApp.Helpers;
+using NewsletterApp.Models;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
-namespace NewsletterApp.Pages
+namespace NewsletterApp.Pages;
+
+public class SignUpModel : PageModel
 {
-    public class SignUpModel : PageModel
+    private readonly IConfiguration _config;
+    private readonly ISendGridClient _sendGridClient;
+
+    public SignUpModel(IConfiguration configuration, ISendGridClient sendGridClient)
     {
-        private readonly IConfiguration _config;
-        public SignUpModel(IConfiguration configuration)
-        {
-            _config = configuration;
-        }
-        [BindProperty]
-        public ContactInfo ContactInfo { get; set; }
-        public IActionResult OnGet()
+        _config = configuration;
+        _sendGridClient = sendGridClient;
+    }
+
+    [BindProperty] public SignUpViewModel SignUpViewModel { get; set; }
+
+    public void OnGet()
+    {
+    }
+
+    public async Task<IActionResult> OnPostAsync()
+    {
+        if (!ModelState.IsValid)
         {
             return Page();
         }
 
-
-        public async Task<IActionResult> OnPostAsync()
+        var confirmationId = Guid.NewGuid();
+        var confirmLink = Url.PageLink("Confirm", protocol: "https", values: new
         {
-            string sendGridApiKey = _config["SendGridAPIKey"];
-            string confirmLink = _config["WebsiteUrl"] + "confirm/" + SecurityHelper.Base64Encode(ContactInfo.Email);
+            email = SignUpViewModel.Email,
+            confirmation = confirmationId
+        });
 
+        var message = new SendGridMessage
+        {
+            // TODO: pull email and name from configuration
+            From = new EmailAddress("home@turntablecharts.com", "Tan Business"),
+            Subject = "Confirm Newsletter Signup",
+            //TODO: remove this property or implement it properly like the HtmlContent
+            PlainTextContent = "Welcome", 
+            HtmlContent = $"<h3>Hello {SignUpViewModel.FullName}</h3><p>Welcome to our Newsletter. <br> <br> " +
+                          $"<br>Kindly click on the link below to confirm your subscription. <br>{confirmLink}</p>"
+        };
 
-            var client = new SendGridClient(sendGridApiKey);
-            var msg = new SendGridMessage
-            {
-                From = new EmailAddress("home@turntablecharts.com", "Tan Business"),
-                Subject = "Confirm Newsletter Signup",
-                PlainTextContent = "Welcome", 
-                HtmlContent = $"<h3>Hello {ContactInfo.FullName}</h3><p>Welcome to our Newsletter. <br> <br> "+
-                    $"<br>Kindly click on the link below to confirm your subscription. <br>{confirmLink}</p>"
-            };
+        message.AddTo(new EmailAddress(SignUpViewModel.Email, SignUpViewModel.FullName));
+        var response = await _sendGridClient.SendEmailAsync(message);
 
-            msg.AddTo(new EmailAddress(ContactInfo.Email, ContactInfo.FullName));
-            var response = await client.SendEmailAsync(msg);
-
-            if (response.IsSuccessStatusCode)
-            {
-                return RedirectToPage("./SignUpSuccess");
-            }
-            else
-            {
-                return RedirectToPage("./Error");
-            }
+        if (!response.IsSuccessStatusCode)
+        {
+            return RedirectToPage("Error");
         }
+
+        // TODO: create contact with name, email address, and confirmation ID
+
+        return RedirectToPage("SignUpSuccess");
     }
 }
