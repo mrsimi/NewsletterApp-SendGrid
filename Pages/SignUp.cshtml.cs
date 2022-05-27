@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using NewsletterApp.Models;
+using NewsletterApp_SendGrid.Data;
+using NewsletterApp_SendGrid.Services;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
@@ -10,11 +12,14 @@ public class SignUpModel : PageModel
 {
     private readonly IConfiguration _config;
     private readonly ISendGridClient _sendGridClient;
+    private readonly IContactRepo _contactRepo;
 
-    public SignUpModel(IConfiguration configuration, ISendGridClient sendGridClient)
+    public SignUpModel(IConfiguration configuration, ISendGridClient sendGridClient, 
+        IContactRepo contactRepo)
     {
         _config = configuration;
         _sendGridClient = sendGridClient;
+        _contactRepo = contactRepo;
     }
 
     [BindProperty] public SignUpViewModel SignUpViewModel { get; set; }
@@ -40,10 +45,9 @@ public class SignUpModel : PageModel
         var message = new SendGridMessage
         {
             // TODO: pull email and name from configuration
-            From = new EmailAddress("home@turntablecharts.com", "Tan Business"),
+            From = new EmailAddress(_config.GetValue<string>("SendGridSenderEmail"), _config.GetValue<string>("SendGridSenderName")),
             Subject = "Confirm Newsletter Signup",
             //TODO: remove this property or implement it properly like the HtmlContent
-            PlainTextContent = "Welcome", 
             HtmlContent = $"<h3>Hello {SignUpViewModel.FullName}</h3><p>Welcome to our Newsletter. <br> <br> " +
                           $"<br>Kindly click on the link below to confirm your subscription. <br>{confirmLink}</p>"
         };
@@ -57,6 +61,14 @@ public class SignUpModel : PageModel
         }
 
         // TODO: create contact with name, email address, and confirmation ID
+        var contact = new Contact
+        {
+            FullName = SignUpViewModel.FullName,
+            Email = SignUpViewModel.Email,
+            ConfirmationId = confirmationId
+        };
+
+        _contactRepo.AddContact(contact);
 
         return RedirectToPage("SignUpSuccess");
     }

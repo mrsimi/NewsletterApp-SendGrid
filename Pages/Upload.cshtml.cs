@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using NewsletterApp.DTO;
 using NewsletterApp.Models;
+using NewsletterApp_SendGrid.Services;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
@@ -13,15 +14,20 @@ public class UploadModel : PageModel
 {
     private readonly ISendGridClient _sendGridClient;
     private readonly HtmlEncoder _htmlEncoder;
+    private readonly IContactRepo _contactRepo;
+    private readonly IConfiguration _config;
 
     public string ErrorMessage { get; set; }
     public string SuccessMessage { get; set; }
     [BindProperty] public UploadNewsletterViewModel NewsletterViewModel { get; set; }
 
-    public UploadModel(ISendGridClient sendGridClient, HtmlEncoder htmlEncoder)
+    public UploadModel(ISendGridClient sendGridClient, HtmlEncoder htmlEncoder, 
+        IContactRepo contactRepo, IConfiguration config)
     {
         _sendGridClient = sendGridClient;
         _htmlEncoder = htmlEncoder;
+        _contactRepo = contactRepo;
+        _config = config;
     }
 
     public void OnGet()
@@ -43,27 +49,18 @@ public class UploadModel : PageModel
         }
 
         // TODO: add comment to explain why this is necessary
+        // I realized when an html file is read the formatting is not kept. 
+        //For example a newline would have the \n character, and some \ characters where inserted at html class naming 
         newsletterContentBuilder.Replace("\n", "").Replace("\r", "").Replace(@"\", "");
+
         // create unsubscribeUrl with substitution tags
-        string unsubscribeUrl = $"{Url.PageLink("Unsubscribe")}?email=-email-&confirmation=-confirmation-";
+        string unsubscribeUrl = $"{Url.PageLink("Unsubscribe")}?email=userEmail&confirmation=userConfirmationId";
         newsletterContentBuilder.Replace("{UnsubscribeLink}", $@"<a href=""{unsubscribeUrl}"">Unsubscribe</a>");
 
-        // TODO: get contacts from SendGrid marketing list instead of getting all contacts
-        //retrieve contacts from SendGrid and deserialize
-        var response = await _sendGridClient.RequestAsync(
-            method: SendGridClient.Method.GET,
-            urlPath: "marketing/contacts"
-        );
+       
 
-        // if there are subscribers iterate over all and send emails to them
-        if (!response.IsSuccessStatusCode)
-        {
-            ErrorMessage = "Sorry, an error has occured in retrieving your subscribers. <br> Try again";
-            return Page();
-        }
-
-        var subscribersResponse = await response.Body.ReadFromJsonAsync<SubscribersResponse>();
-        if (subscribersResponse.contact_count == 0)
+        var contacts = _contactRepo.GetConfirmedContacts();
+        if(contacts.Count == 0)
         {
             SuccessMessage = "There are currently no subscribers";
             return Page();
@@ -71,27 +68,32 @@ public class UploadModel : PageModel
 
         var message = new SendGridMessage
         {
-            Personalizations = subscribersResponse.result.Select(subscriber => new Personalization
+            Personalizations = contacts.Select(subscriber => new Personalization
             {
-                Tos = new List<EmailAddress> {new(subscriber.email)},
+                Tos = new List<EmailAddress> {new(subscriber.Email)},
                 Substitutions = new Dictionary<string, string>
                 {
-                    {"email", _htmlEncoder.Encode(subscriber.email)}, // HTML encode to prevent HTML injection attacks
-                    {"confirmation", _htmlEncoder.Encode("")} //TODO: fetch confirmation number
+                    {"userEmail", _htmlEncoder.Encode(subscriber.Email)}, // HTML encode to prevent HTML injection attacks
+                    {"userConfirmationId", _htmlEncoder.Encode(subscriber.ConfirmationId.ToString())} 
                 }
             }).ToList(),
 
-            // TODO: replace with email address and name from configuration
-            From = new EmailAddress("home@turntablecharts.com", "Tan Business"),
+            
+            From = new EmailAddress(_config.GetValue<string>("SendGridSenderEmail"), _config.GetValue<string>("SendGridSenderName")),
             Subject = NewsletterViewModel.EmailSubject,
-            //TODO: remove PlainTextContent or provide a plain text version of the HTML email
-            PlainTextContent = NewsletterViewModel.EmailSubject,
-            HtmlContent = newsletterContentBuilder.ToString()
+            HtmlContent = newsletterContentBuilder.ToString(),
             // Suggestion: add sendAt property to schedule newsletter at a certain time
         };
 
         var sendEmailResponse = await _sendGridClient.SendEmailAsync(message);
         //TODO: check success email response and provide accurate error messages
+
+        if(!sendEmailResponse.IsSuccessStatusCode)
+        {
+            ErrorMessage = "Sorry, there was a problem while trying to send the newsletters. \n Try again later";
+            return Page();
+        }
+        
 
         SuccessMessage = "Newsletter has been sent to all subscribers";
         return Page();

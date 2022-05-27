@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using NewsletterApp.DTO;
+using NewsletterApp_SendGrid.Services;
 using SendGrid;
 
 namespace NewsletterApp.Pages;
@@ -9,40 +10,41 @@ namespace NewsletterApp.Pages;
 public class UnsubscribeModel : PageModel
 {
     private readonly ISendGridClient _sendGridClient;
+    private readonly IContactRepo _contactRepo;
 
     public string ResponseMessage { get; set; }
 
-    public UnsubscribeModel(ISendGridClient sendGridClient)
+    public UnsubscribeModel(ISendGridClient sendGridClient, IContactRepo contactRepo)
     {
         _sendGridClient = sendGridClient;
+        _contactRepo = contactRepo;
     }
 
-    public async Task OnGetAsync(
+    public void OnGet(
         [FromQuery(Name = "email")] string emailAddress,
-        [FromQuery(Name = "confirmation")] Guid confirmationId
+        [FromQuery(Name = "confirmation")] string confirmation
     )
     {
-        var subscribeRequest = new
+        var confirmationId = new Guid(confirmation);
+        var contact = _contactRepo.GetContactByEmail(emailAddress);
+        if (contact == null)
         {
-            emails = new[] {emailAddress}
-        };
-
-        string requestBody = JsonSerializer.Serialize(subscribeRequest);
-
-        var response = await _sendGridClient.RequestAsync(
-            method: SendGridClient.Method.POST,
-            urlPath: "marketing/contacts/search/emails",
-            requestBody: requestBody
-        );
-
-        if (!response.IsSuccessStatusCode)
-        {
-            //TODO: use an error message that's more accurate
-            ResponseMessage = "Sorry, but this is an invalid link";
+            ResponseMessage = "Sorry, but it looks like you already unsubscribed";
         }
+        else
+        {
+            if (contact.ConfirmationId.Equals(confirmationId))
+            {
+                _contactRepo.DeleteContact(contact);
+                ResponseMessage = "Thank you \n You have been successfully " +
+                "removed from this subscriber list and \n won't recieve any further emails from us \n\n";
+            }
+            else
+            {
+                ResponseMessage = "Invalid link \n\n  " +
+                "Sorry, we cannot unsubscribe you because this links appears to be corrupted";
+            }
 
-        var responseJson = await response.Body.ReadFromJsonAsync<SubscribersResponse>();
-        //TODO: verify `confirmationId` matches the confirmation number you stored in the SendGrid contact
-        //TODO: remove contact from Marketing List
+        }
     }
 }
