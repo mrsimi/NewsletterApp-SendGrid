@@ -1,9 +1,9 @@
-@page "{query}"
+@page
 @model ConfirmModel
 @{
-    ViewData["Title"] = "Confirm-Email";
+    ViewData["Title"] = "Newsletter Confirmation";
 }
 
 <div class="form-container">
-   <h1> @ViewData["ResponseMessage"]</h1>
+    <h1>@Model.ResponseMessage</h1>
 </div>

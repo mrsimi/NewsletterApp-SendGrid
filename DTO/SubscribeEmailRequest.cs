@@ -1,10 +1,6 @@
-using Newtonsoft.Json;
+namespace NewsletterApp.DTO;
 
-namespace NewsletterApp.DTO
+public class SubscribeEmailRequest
 {
-    public class SubscribeEmailRequest
-    {
-
-        public dynamic contacts { get; set; }
-    }
+    public dynamic contacts { get; set; }
 }

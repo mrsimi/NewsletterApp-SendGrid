@@ -1,8 +1,12 @@
+using SendGrid.Extensions.DependencyInjection;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
-
+builder.Services.AddSendGrid(options =>
+    options.ApiKey = builder.Configuration["SendGridApiKey"]
+);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace NewsletterApp.Pages
+namespace NewsletterApp.Pages;
+
+public class SignUpSuccessModel : PageModel
 {
-    public class SignUpSuccessModel: PageModel
+    public void OnGet()
     {
-        public void OnGet()
-        {
-            
-        }
     }
 }

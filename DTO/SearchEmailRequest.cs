@@ -1,7 +1,6 @@
-namespace NewsletterApp.DTO
+namespace NewsletterApp.DTO;
+
+public class SearchEmailQuery
 {
-    public class SearchEmailQuery   
-    {
-        public string query { get; set; }
-    }
+    public string query { get; set; }
 }
