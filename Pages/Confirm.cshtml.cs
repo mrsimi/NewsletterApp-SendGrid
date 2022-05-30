@@ -20,21 +20,17 @@ public class ConfirmModel : PageModel
         [FromQuery(Name = "confirmation")] Guid confirmationId
     )
     {
-        var savedContact = _contactRepo.GetContactByEmail(emailAddress);
+        var savedContact = _contactRepo.ConfirmContact(emailAddress, confirmationId);
         if(savedContact == null)
         {
             ResponseMessage = "Sorry, but this is an invalid link.";
             return;
         }
-        
-        if(savedContact.ConfirmationId.Equals(confirmationId))
-        {
-            _contactRepo.ConfirmContact(savedContact.Id);
-            ResponseMessage = "Thank you for signing up for our newsletter.";
-        }
         else 
         {
-            ResponseMessage = "Sorry, but this is an invalid link.";   
+            ResponseMessage = "Sorry, but this is an invalid link."; 
+
+            return;
         }
     }
 }

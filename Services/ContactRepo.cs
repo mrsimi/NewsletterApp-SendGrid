@@ -15,13 +15,23 @@ namespace NewsletterApp.Services
         {
             contact.Email = contact.Email.Trim().ToLower();
             _dbContext.Contacts.Add(contact);
-            _dbContext.SaveChanges();
+            try
+            {
+                _dbContext.SaveChanges();
+            }
+            catch (DbUpdateException)
+            {
+                return;
+            }
+            
+            
         }
 
         public void ConfirmContact(int id)
         {
            var subscriber = _dbContext.Contacts.FirstOrDefault(m => m.Id == id);
            //TODO: if subscriber null?
+           //on the confirm.cshtml.cs, user is already retrieved 
            subscriber.IsConfirmed = true; 
            _dbContext.SaveChanges();
         }
@@ -50,6 +60,20 @@ namespace NewsletterApp.Services
             return _dbContext.Contacts
                 .AsNoTracking()
                 .FirstOrDefault(m => m.Email == email);
+        }
+
+        public Contact ConfirmContact(string email, Guid confirmationId)
+        {
+            var contact = _dbContext.Contacts.FirstOrDefault(m => m.Email == email.ToLower());
+            if(contact != null && contact.ConfirmationId.Equals(confirmationId))
+            {
+                contact.IsConfirmed = true;
+                _dbContext.SaveChanges();
+
+                return contact;
+            }
+
+            return null;
         }
     }
 }
