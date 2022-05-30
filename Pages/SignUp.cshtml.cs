@@ -41,11 +41,17 @@ public class SignUpModel : PageModel
             return Page();
         }
         
-        // TODO: before sending email and creating contact, check if contact already exists in database
-        // I added a unique constraint on the email property, so now it will throw an exception
-        // this is sufficient for the article, up to you if you want to implement this
-
-        var confirmationId = Guid.NewGuid();
+        Guid confirmationId;
+        var savedContact = _contactRepo.GetContactByEmail(SignUpViewModel.Email.ToLower());
+        if(savedContact != null)
+        {
+            confirmationId = savedContact.ConfirmationId;
+        }
+        else 
+        {
+            confirmationId = Guid.NewGuid();
+        }
+       
         var confirmLink = Url.PageLink("Confirm", protocol: "https", values: new
         {
             email = SignUpViewModel.Email,
@@ -73,13 +79,17 @@ public class SignUpModel : PageModel
             return RedirectToPage("Error");
         }
 
-        var contact = new Contact
+        if(savedContact == null)
         {
-            FullName = SignUpViewModel.FullName,
-            Email = SignUpViewModel.Email,
-            ConfirmationId = confirmationId
-        };
-        _contactRepo.AddContact(contact);
+            var contact = new Contact
+            {
+                FullName = SignUpViewModel.FullName,
+                Email = SignUpViewModel.Email,
+                ConfirmationId = confirmationId
+            };
+            _contactRepo.AddContact(contact);
+        }
+       
 
         return RedirectToPage("SignUpSuccess");
     }

@@ -15,27 +15,9 @@ namespace NewsletterApp.Services
         {
             contact.Email = contact.Email.Trim().ToLower();
             _dbContext.Contacts.Add(contact);
-            try
-            {
-                _dbContext.SaveChanges();
-            }
-            catch (DbUpdateException)
-            {
-                return;
-            }
-            
-            
+            _dbContext.SaveChanges();
         }
-
-        public void ConfirmContact(int id)
-        {
-           var subscriber = _dbContext.Contacts.FirstOrDefault(m => m.Id == id);
-           //TODO: if subscriber null?
-           //on the confirm.cshtml.cs, user is already retrieved 
-           subscriber.IsConfirmed = true; 
-           _dbContext.SaveChanges();
-        }
-
+        
         public void DeleteContact(Contact subscriber)
         {
             _dbContext.Contacts.Remove(subscriber);

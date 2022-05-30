@@ -116,8 +116,7 @@ public class UploadModel : PageModel
             }
         }
 
-        // Suggestion: create UploadSuccessPage or update Upload.cshtml to look better after successful submit
-        SuccessMessage = "Newsletter issue has been sent to all subscribers";
-        return Page();
+     
+        return Redirect("UploadSuccess");
     }
 }

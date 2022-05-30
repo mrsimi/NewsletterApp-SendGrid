@@ -28,8 +28,7 @@ public class ConfirmModel : PageModel
         }
         else 
         {
-            ResponseMessage = "Sorry, but this is an invalid link."; 
-
+            ResponseMessage = "Thank you for signing up for our newsletter."; 
             return;
         }
     }
