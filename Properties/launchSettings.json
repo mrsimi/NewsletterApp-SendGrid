@@ -13,6 +13,7 @@
       "dotnetRunMessages": true,
       "launchBrowser": true,
       "applicationUrl": "https://localhost:7075;http://localhost:5086",
+      "launchUrl": "https://localhost:7075/SignUp",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

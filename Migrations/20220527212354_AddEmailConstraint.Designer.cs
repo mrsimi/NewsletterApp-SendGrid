@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NewsletterApp.Data;
 
@@ -10,9 +11,10 @@ using NewsletterApp.Data;
 namespace NewsletterApp.Migrations
 {
     [DbContext(typeof(NewsletterDbContext))]
-    partial class NewsletterDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220527212354_AddEmailConstraint")]
+    partial class AddEmailConstraint
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.5");

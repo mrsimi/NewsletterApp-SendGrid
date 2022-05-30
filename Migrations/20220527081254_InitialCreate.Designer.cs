@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using NewsletterApp_SendGrid.Data;
+using NewsletterApp.Data;
 
 #nullable disable
 
@@ -19,7 +19,7 @@ namespace NewsletterApp.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.5");
 
-            modelBuilder.Entity("NewsletterApp_SendGrid.Data.Contact", b =>
+            modelBuilder.Entity("NewsletterApp.Data.Contact", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

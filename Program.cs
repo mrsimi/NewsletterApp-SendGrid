@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
-using NewsletterApp_SendGrid.Data;
-using NewsletterApp_SendGrid.Services;
+using NewsletterApp.Data;
+using NewsletterApp.Services;
 using SendGrid.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Add Dbcontext
+//Add DbContext
 builder.Services.AddDbContext<NewsletterDbContext>(options => 
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
@@ -20,6 +20,15 @@ builder.Services.AddScoped<IContactRepo, ContactRepo>();
 
 
 var app = builder.Build();
+
+if (bool.Parse(app.Configuration["Seed:Run"] ?? "false"))
+{
+    using var serviceScope = app.Services.CreateScope();
+    var dbContext = serviceScope.ServiceProvider.GetRequiredService<NewsletterDbContext>();
+    var seeder = new NewsletterDbContextSeeder(dbContext, app.Configuration);
+    await seeder.Run();
+    return;
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
