@@ -1,4 +1,4 @@
-namespace NewsletterApp_SendGrid.Data
+namespace NewsletterApp.Data
 {
     public class Contact
     {

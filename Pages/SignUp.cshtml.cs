@@ -1,8 +1,9 @@
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using NewsletterApp.Models;
-using NewsletterApp_SendGrid.Data;
-using NewsletterApp_SendGrid.Services;
+using NewsletterApp.Data;
+using NewsletterApp.Services;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
@@ -13,13 +14,18 @@ public class SignUpModel : PageModel
     private readonly IConfiguration _config;
     private readonly ISendGridClient _sendGridClient;
     private readonly IContactRepo _contactRepo;
+    private readonly HtmlEncoder _htmlEncoder;
 
-    public SignUpModel(IConfiguration configuration, ISendGridClient sendGridClient, 
-        IContactRepo contactRepo)
+    public SignUpModel(
+        IConfiguration configuration, 
+        ISendGridClient sendGridClient, 
+        IContactRepo contactRepo,
+        HtmlEncoder htmlEncoder)
     {
         _config = configuration;
         _sendGridClient = sendGridClient;
         _contactRepo = contactRepo;
+        _htmlEncoder = htmlEncoder;
     }
 
     [BindProperty] public SignUpViewModel SignUpViewModel { get; set; }
@@ -34,6 +40,10 @@ public class SignUpModel : PageModel
         {
             return Page();
         }
+        
+        // TODO: before sending email and creating contact, check if contact already exists in database
+        // I added a unique constraint on the email property, so now it will throw an exception
+        // this is sufficient for the article, up to you if you want to implement this
 
         var confirmationId = Guid.NewGuid();
         var confirmLink = Url.PageLink("Confirm", protocol: "https", values: new
@@ -44,12 +54,15 @@ public class SignUpModel : PageModel
 
         var message = new SendGridMessage
         {
-            // TODO: pull email and name from configuration
-            From = new EmailAddress(_config.GetValue<string>("SendGridSenderEmail"), _config.GetValue<string>("SendGridSenderName")),
+            From = new EmailAddress(
+                email: _config.GetValue<string>("SendGridSenderEmail"), 
+                name: _config.GetValue<string>("SendGridSenderName")
+            ),
             Subject = "Confirm Newsletter Signup",
-            //TODO: remove this property or implement it properly like the HtmlContent
-            HtmlContent = $"<h3>Hello {SignUpViewModel.FullName}</h3><p>Welcome to our Newsletter. <br> <br> " +
-                          $"<br>Kindly click on the link below to confirm your subscription. <br>{confirmLink}</p>"
+            HtmlContent = $@"<h3>Ahoy {_htmlEncoder.Encode(SignUpViewModel.FullName)}!</h3>
+                            <p>Welcome to our Newsletter. <br>
+                            Kindly click on the link below to confirm your subscription: <br>
+                            <a href=""{confirmLink}"">Confirm your newsletter subscription</a></p>"
         };
 
         message.AddTo(new EmailAddress(SignUpViewModel.Email, SignUpViewModel.FullName));
@@ -60,14 +73,12 @@ public class SignUpModel : PageModel
             return RedirectToPage("Error");
         }
 
-        // TODO: create contact with name, email address, and confirmation ID
         var contact = new Contact
         {
             FullName = SignUpViewModel.FullName,
             Email = SignUpViewModel.Email,
             ConfirmationId = confirmationId
         };
-
         _contactRepo.AddContact(contact);
 
         return RedirectToPage("SignUpSuccess");
